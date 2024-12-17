@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "../../lib/api";
-import styles from "./ChatWindow.module.css";
+import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 
 const ChatWindow = ({ user, chatId, onChatIdChange }) => {
   const [message, setMessage] = useState("");
@@ -67,32 +67,51 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
+    }
+  };
+
   return (
-    <div className={styles.chatBox}>
+    <div className="flex flex-col h-full max-w-full p-4 bg-gray-50 rounded-xl shadow-md">
       {/* Chat History */}
-      <div className={styles.chatHistory}>
+      <div className="flex-1 overflow-y-auto p-4 bg-white rounded-xl shadow-inner">
         {chatHistory.map((chat, index) => (
           <div
             key={index}
-            className={`${styles.chatMessage} ${chat.sender === "user" ? styles.userMessage : styles.botMessage}`}
+            className={`flex ${chat.sender === "user" ? "justify-end" : "justify-start"
+              } mb-2`}
           >
-            <div className={styles.messageContent}>{chat.content}</div>
+            <div
+              className={`max-w-xs p-3 rounded-xl text-sm ${chat.sender === "user"
+                  ? "bg-blue-500 text-white rounded-br-sm"
+                  : "bg-gray-200 text-gray-900 rounded-bl-sm"
+                }`}
+            >
+              {chat.content}
+            </div>
           </div>
         ))}
       </div>
 
       {/* Input Area */}
-      <div className={styles.inputContainer}>
+      <div className="flex items-center mt-4 p-2 bg-white rounded-full shadow-md">
         <input
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className={styles.inputField}
-          placeholder="Type your message..."
+          onKeyPress={handleKeyPress}
+          className="flex-1 px-4 py-2 text-gray-700 bg-transparent focus:outline-none rounded-full"
+          placeholder="Type a message..."
         />
-        <button onClick={handleSendMessage} className={styles.sendButton}>
-          Send
+        <button
+          onClick={handleSendMessage}
+          className="p-3 ml-2 text-white bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none"
+        >
+          <PaperAirplaneIcon className="w-5 h-5 transform -rotate-45" />
         </button>
+
       </div>
     </div>
   );

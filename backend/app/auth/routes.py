@@ -62,12 +62,12 @@ def login():
         # Set HTTP-only cookie for the token
         response = make_response(jsonify({"user": user_info}))
         response.set_cookie(
-            "access_token",
-            access_token,
-            httponly=True,
-            secure=True,
-            samesite="Strict",
-            max_age=3600
+            "access_token",  # Cookie name
+            access_token,    # JWT token value
+            httponly=True,   # JavaScript cannot access this cookie
+            secure=True,    # Use True in production with HTTPS
+            samesite="Lax",  # Restrict cross-site sending
+            max_age=3600     # Cookie expiration time in seconds
         )
         return response
     except Exception as e:
@@ -151,7 +151,7 @@ def google_authorized():
             "access_token",  # Cookie name
             access_token,    # JWT token value
             httponly=True,   # JavaScript cannot access this cookie
-            secure=False,    # Use True in production with HTTPS
+            secure=True,    # Use True in production with HTTPS
             samesite="Lax",  # Restrict cross-site sending
             max_age=3600     # Cookie expiration time in seconds
         )

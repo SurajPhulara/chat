@@ -47,18 +47,33 @@ def ask_chatbot():
 
     return jsonify({"response": chatbot_response}), 200
 
-# Route to get the latest chats for a user
 @chatbot_bp.route('/latest-chats', methods=['GET'])
 @jwt_required()
 def get_latest_chats():
+    # Get the x parameter, default to 5
     x = request.args.get('x', default=5, type=int)
+    
+    # Calculate the starting index for the chats
+    start_index = max(0, x - 5)  # Ensure the starting index is not negative
+    
+    # Get the user id from the JWT token
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
 
-    latest_chats = Chat.query.filter_by(user_id=user.id).order_by(Chat.created_at.desc()).limit(x).all()
+    # Fetch the chats from the calculated range
+    latest_chats = (
+        Chat.query.filter_by(user_id=user.id)
+        .order_by(Chat.created_at.desc())
+        .offset(start_index)
+        .limit(5)
+        .all()
+    )
+    
+    # Prepare the response data
     chats_data = [{"chat_id": chat.chat_id, "name": chat.name} for chat in latest_chats]
     
     return jsonify({"latest_chats": chats_data}), 200
+
 
 # Route to get the entire chat history for a specific chat ID
 @chatbot_bp.route('/chat-history', methods=['GET'])

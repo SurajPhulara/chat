@@ -76,11 +76,11 @@ export const AuthProvider = ({ children }) => {
   const checkUser = async () => {
     try {
       // First, try to get user from localStorage
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser)); // Parse only if storedUser exists
-        router.push("/chat");
-      } else {
+      // const storedUser = localStorage.getItem("user");
+      // if (false && storedUser) {
+      //   setUser(JSON.parse(storedUser)); // Parse only if storedUser exists
+      //   router.push("/chat");
+      // } else {
         // If no user in localStorage, check with the backend for the current user
         const response = await apiRequest("auth/current", { method: "GET" });
         if (response.user) {
@@ -88,7 +88,10 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("user", JSON.stringify(response.user)); // Store in localStorage for future sessions
           router.push("/chat");
         }
-      }
+        else {
+          router.push("/auth");
+        }
+      // }
     } catch (error) {
       console.error("Error checking user:", error.message);
     } finally {

@@ -26,7 +26,22 @@ const Sidebar = ({ user, chatId, onChatIdChange }) => {
     };
 
     fetchLatestChats();
-  }, [user, chatId]);
+  }, [user]);
+
+  const loadMoreChats = async () => {
+    try {
+      if (!user) router.push(`/auth`);
+
+      const data = await apiRequest(`chatbot/latest-chats?x=${recentChats.length + 5}`, {
+        method: "GET",
+      });
+
+      // Append the newly fetched chats to the current list
+      setRecentChats((prevChats) => [...prevChats, ...data.latest_chats]);
+    } catch (error) {
+      console.error("Failed to fetch latest chats:", error.message);
+    }
+  };
 
   const handleSelectChat = (selectedChatId) => {
     onChatIdChange(selectedChatId);
@@ -37,6 +52,43 @@ const Sidebar = ({ user, chatId, onChatIdChange }) => {
     onChatIdChange(null);
     router.push(`/chat`);
   };
+
+
+
+  // Re-fetch the chats if the selected chatId is not in recentChats
+  useEffect(() => {
+    const isChatIdInRecentChats = recentChats.some((chat) => chat.chat_id === chatId);
+
+    if (chatId && !isChatIdInRecentChats) {
+      setLoading(true); // Start loading again
+
+      const fetchLatestChats = async () => {
+        try {
+          if (!user) router.push(`/auth`);
+
+          const data = await apiRequest("chatbot/latest-chats?x=5", {
+            method: "GET",
+          });
+
+          // Filter out any chat that is already in the recentChats state
+          const newChats = data.latest_chats.filter((chat) =>
+            !recentChats.some(existingChat => existingChat.chat_id === chat.chat_id)
+          );
+
+          // Append the new chats to the state
+          setRecentChats((prevChats) => [...newChats, ...prevChats]);
+
+        } catch (error) {
+          console.error("Failed to fetch latest chats:", error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchLatestChats();
+    }
+  }, [chatId]); // Trigger when chatId or recentChats change
+
 
   return (
     <div className={styles.sidebarContainer}>
@@ -54,13 +106,14 @@ const Sidebar = ({ user, chatId, onChatIdChange }) => {
       <div className={styles.chatsContainer}>
         <h3 className={styles.chatsHeading}>Recent Chats</h3>
         <ul className={styles.chatList}>
-          {recentChats.length > 0 ? (
+          {loading ? (
+            <p>Loading...</p>
+          ) : recentChats.length > 0 ? (
             recentChats.map((chat) => (
               <li
                 key={chat.chat_id}
-                className={`${styles.chatItem} ${
-                  chat.chat_id === chatId ? styles.activeChatItem : ""
-                }`}
+                className={`${styles.chatItem} ${chat.chat_id === chatId ? styles.activeChatItem : ""
+                  }`}
                 onClick={() => handleSelectChat(chat.chat_id)}
               >
                 <FaComments className={styles.chatIcon} />
@@ -70,6 +123,13 @@ const Sidebar = ({ user, chatId, onChatIdChange }) => {
           ) : (
             <p className={styles.noChats}>No recent chats.</p>
           )}
+          {
+            recentChats.length > 0 ?
+            <li className={styles.loadmorechats} onClick={loadMoreChats}>
+              Load more chats
+            </li>
+            :<></>
+          }
         </ul>
       </div>
     </div>
