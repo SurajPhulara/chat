@@ -24,7 +24,7 @@ def ask_chatbot():
     # Fetch or create chat for user
     chat = Chat.query.filter_by(chat_id=chat_id, user_id=user.id).first()
     if not chat:
-        chat = Chat(chat_id=chat_id, user_id=user.id, name=f"Chat: {message}")
+        chat = Chat(chat_id=chat_id, user_id=user.id, name=f"{message}")
         db.session.add(chat)
         db.session.commit()
 

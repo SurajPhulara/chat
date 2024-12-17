@@ -22,3 +22,9 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+
+    JWT_TOKEN_LOCATION = ["cookies"]  # Store JWT in cookies
+    JWT_COOKIE_SECURE = False         # Set to True in production
+    JWT_COOKIE_CSRF_PROTECT = False   # CSRF protection (disable for now during development)
+    JWT_ACCESS_COOKIE_NAME = "access_token"

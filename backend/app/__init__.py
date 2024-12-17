@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from authlib.integrations.flask_client import OAuth
+from flask_cors import CORS
 
 # Initialize app components
 db = SQLAlchemy()
@@ -15,6 +16,7 @@ def create_app():
 
     # Load app config
     app.config.from_object('app.config.Config')
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
     # Initialize extensions
     db.init_app(app)
