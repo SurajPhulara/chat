@@ -1,24 +1,34 @@
 "use client";
 
+import { useState } from "react";
 import styles from "./page.module.css";
-import { useRouter } from "next/navigation";
+import Login from "../components/Login/Login"; // Adjust the path as per your project structure
+import Signup from "../components/Signup/Signup"; // Adjust the path as per your project structure
 
 export default function LandingPage() {
-  const router = useRouter();
+  const [isLoginMode, setIsLoginMode] = useState(true);
 
-  const handleGetStarted = () => {
-    router.push("/auth");
+  const toggleMode = (e) => {
+    e.preventDefault();
+    setIsLoginMode((prevMode) => !prevMode);
   };
 
   return (
-    <div className={`${styles.container} ${styles.landing}`}>
-      <div className={styles["welcome-container"]}>
-        <h1>Welcome to ChatBotAI</h1>
-        <p>
-          Your intelligent assistant, ready to chat, guide, and simplify your daily tasks. 
-          Explore the future of AI-powered conversations.
-        </p>
-        <button onClick={handleGetStarted}>Get Started</button>
+    <div className={styles.container}>
+      {/* Left Half: Image */}
+      <div className={styles.left}>
+        {/* <img
+          src="/home.png" // Ensure the image is in the public folder
+          alt="Welcome"
+          className={styles.image}
+        /> */}
+      </div>
+
+      {/* Right Half: Login/Signup */}
+      <div className={styles.right}>
+        <div className={styles.content}>
+          {isLoginMode ? <Login toggleMode={toggleMode} /> : <Signup toggleMode={toggleMode} />}
+        </div>
       </div>
     </div>
   );

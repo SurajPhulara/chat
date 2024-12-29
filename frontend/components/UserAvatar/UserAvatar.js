@@ -31,7 +31,7 @@ const UserAvatar = ({ userName = "User", logout }) => {
 
   const handleLogout = () => {
     logout();
-    router.push("/auth");
+    router.push("/");
   };
 
   const toggleDropdown = () => {

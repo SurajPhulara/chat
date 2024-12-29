@@ -1,61 +1,61 @@
-.landing {
+.container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    flex-direction: column;
     height: 100vh;
-    background-color: #c9d6ff;
-    background: linear-gradient(to right, #e2e2e2, #c9d6ff);
-}
+    width: 100vw;
+  }
+  
+  .left, .right {
+    display: flex;
+    width: 50%;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    flex-direction: column;
+  }
 
-.welcome-container {
-    background-color: #fff;
-    padding: 40px 60px;
-    border-radius: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
-    max-width: 500px;
-    width: 90%;
-    animation: fadeIn 0.6s ease-in-out;
-}
+  .left {
+    flex: 1; /* Takes 50% of the width */
+    background-image: url('/home.png'); /* Ensure the image is placed in the public folder */
+    background-size: cover; /* Ensures the image covers the entire div */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents tiling of the image */
+  }
+  
+  .image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+  
+  .right {
+    background-color: #ffffff;
+  }
+  
+  .content {
+    text-align: center;
+    width: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
 
-.welcome-container h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: #512da8;
-}
-
-.welcome-container p {
-    font-size: 1rem;
-    color: #333;
-    margin-bottom: 30px;
-}
-
-.welcome-container button {
-    background-color: #512da8;
-    color: #fff;
-    font-size: 1rem;
-    padding: 10px 30px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease-in-out;
-}
-
-.welcome-container button:hover {
-    background-color: #5c6bc0;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
+  /* Media query for screens smaller than 700px */
+@media (max-width: 700px) {
+    .container {
+        flex-direction: column;  /* Change the container direction to column */
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    .left, .right {
+        width: 100%;  /* Make both left and right take full width */
+        margin-bottom: 20px;  /* Add some space between sections */
+    }
+    
+    .left{
+        min-height: 100vh;
+    }
+
+    .right {
+        border: none;  /* Remove border in mobile view */
     }
 }
