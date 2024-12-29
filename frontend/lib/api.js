@@ -22,7 +22,7 @@ export const apiRequest = async (endpoint, options = {}) => {
     // Parse and return the JSON response
     return await response.json();
   } catch (error) {
-    console.error("Error during API request:", error.message);
+    // console.error("Error during API request:", error.message);
     throw error;
   }
 };

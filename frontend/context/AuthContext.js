@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       router.push("/chat");
     } catch (error) {
-      console.error("Login failed:", error.message);
+      console.log("Login failed:", error.message);
       throw error; // Propagate the error to the calling function
     }
   };
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
       return data; // Return data to inform successful registration
     } catch (error) {
-      console.error("Registration failed:", error.message);
+      console.log("Registration failed:", error.message);
       throw error; // Propagate the error to the calling function
     }
   };
@@ -54,9 +54,9 @@ export const AuthProvider = ({ children }) => {
       await apiRequest("auth/logout", { method: "POST" }); // Clear server-side session if necessary
       localStorage.removeItem("user"); // Remove user data from local storage
       setUser(null);
-      router.push("/auth"); // Redirect to the authentication page
+      router.push("/"); // Redirect to the authentication page
     } catch (error) {
-      console.error("Logout failed:", error.message);
+      console.log("Logout failed:", error.message);
     }
   };
 
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
   //       setUser(JSON.parse(storedUser)); // Parse only if storedUser exists
   //     }
   //   } catch (error) {
-  //     console.error("Error checking user:", error.message);
+  //     console.log("Error checking user:", error.message);
   //   } finally {
   //     setLoading(false); // Ensure loading stops after execution
   //   }
@@ -86,14 +86,15 @@ export const AuthProvider = ({ children }) => {
         if (response.user) {
           setUser(response.user); // Set the user if the backend returns user data
           localStorage.setItem("user", JSON.stringify(response.user)); // Store in localStorage for future sessions
-          router.push("/chat");
+          // router.push("/chat");
         }
         else {
-          router.push("/auth");
+          router.push("/");
         }
       // }
     } catch (error) {
-      console.error("Error checking user:", error.message);
+      await router.push("/")
+      console.log("Error checking user:", error.message);
     } finally {
       setLoading(false); // Ensure loading stops after execution
     }

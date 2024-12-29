@@ -1,48 +1,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "../../context/AuthContext"; // Importing useAuth for user context
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "../../context/AuthContext";
 import UserAvatar from "../../components/UserAvatar/UserAvatar";
-import Sidebar from "../../components/Sidebar/Sidebar"; // Importing Sidebar component
-import ChatWindow from "../../components/ChatWindow/ChatWindow"; // Import the new ChatWindow component
+import Sidebar from "../../components/Sidebar/Sidebar";
+import ChatWindow from "../../components/ChatWindow/ChatWindow";
 import styles from "./page.module.css";
-import { v4 as uuidv4 } from "uuid";
 
 const ChatPage = () => {
-  const { user, logout } = useAuth(); // Using the Auth context to get user and logout functions
+  const { user, logout } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [chatId, setChatId] = useState(null); // Centralized chatId state
+  const [chatId, setChatId] = useState(null);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   // Function to update chatId
   const handleChatIdChange = (newChatId) => {
     setChatId(newChatId);
   };
 
+  // Read `chatId` from URL if present
+  useEffect(() => {
+    const urlChatId = searchParams.get("id");
+    if (urlChatId) {
+      setChatId(urlChatId);
+    }
+  }, [searchParams]);
+
   // Redirect to auth page if user is not logged in
   useEffect(() => {
     if (!user) {
-      router.push("/auth");
+      router.push("/");
     }
   }, [user]);
 
+  // Function to toggle sidebar visibility
+  const toggleSidebar = () => {
+    setIsSidebarVisible((prev) => !prev);
+  };
+
   return (
     <div className={styles.container}>
+      {/* Hamburger Icon */}
+      <div className={styles.hamburger} onClick={toggleSidebar}>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
       {/* Sidebar Component */}
-      <Sidebar user={user} chatId={chatId} onChatIdChange={handleChatIdChange}/>
+      <div className={`${styles.sidebar} ${isSidebarVisible ? styles.visible : ""}`}>
+        <Sidebar user={user} chatId={chatId} onChatIdChange={handleChatIdChange} userName={user?.username} logout={logout} toggleSidebar={toggleSidebar}/>
+      </div>
 
       {/* Main Chat Section */}
       <div className={styles.mainContent}>
-        {user && (
-          <div className={styles.header}>
-            <UserAvatar userName={user.username} logout={logout} />
-            <h2>Welcome, {user.username}</h2>
-          </div>
-        )}
 
         {/* Chat Window Component */}
-        <ChatWindow user={user} chatId={chatId} onChatIdChange={handleChatIdChange}/>
+        <ChatWindow user={user} chatId={chatId} onChatIdChange={handleChatIdChange} />
       </div>
     </div>
   );
