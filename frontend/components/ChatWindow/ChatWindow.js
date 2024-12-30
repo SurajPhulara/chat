@@ -34,9 +34,6 @@ useEffect(()=>{
         try {
           const response = await apiRequest(`chatbot/chat-history?chat_id=${chatId}`, {
             method: "GET",
-            headers: {
-              Authorization: `Bearer ${user?.token}`,
-            },
           });
           setChatHistory(response.chat_history || []);
         } catch (error) {

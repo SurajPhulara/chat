@@ -46,8 +46,8 @@ const Sidebar = ({ user, chatId, onChatIdChange, userName, logout, toggleSidebar
   };
 
   const handleSelectChat = (selectedChatId) => {
-    onChatIdChange(selectedChatId);
     toggleSidebar()
+    onChatIdChange(selectedChatId);
     router.push(`/chat?id=${selectedChatId}`);
   };
 
