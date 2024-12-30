@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     // Redirect user to Google OAuth login URL
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google_login`;
   };
-  
+
 
   const logout = async () => {
     try {
@@ -81,16 +81,16 @@ export const AuthProvider = ({ children }) => {
       //   setUser(JSON.parse(storedUser)); // Parse only if storedUser exists
       //   router.push("/chat");
       // } else {
-        // If no user in localStorage, check with the backend for the current user
-        const response = await apiRequest("auth/current", { method: "GET" });
-        if (response.user) {
-          setUser(response.user); // Set the user if the backend returns user data
-          localStorage.setItem("user", JSON.stringify(response.user)); // Store in localStorage for future sessions
-          // router.push("/chat");
-        }
-        else {
-          router.push("/");
-        }
+      // If no user in localStorage, check with the backend for the current user
+      const response = await apiRequest("auth/current", { method: "GET" });
+      if (response.user) {
+        setUser(response.user); // Set the user if the backend returns user data
+        localStorage.setItem("user", JSON.stringify(response.user)); // Store in localStorage for future sessions
+        // router.push("/chat");
+      }
+      else {
+        router.push("/");
+      }
       // }
     } catch (error) {
       await router.push("/")
@@ -105,7 +105,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>; // Show loading state until user is checked
+    return <div className="flex items-center justify-center h-screen bg-gray-50" style={{height:"100vh;"}}>
+      <div className="flex flex-col items-center">
+        <div className="loader w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-lg font-medium text-gray-600">Loading...</p>
+      </div>
+    </div>; // Show loading state until user is checked
   }
 
   return (
