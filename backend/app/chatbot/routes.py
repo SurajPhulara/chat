@@ -3,6 +3,10 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.models import Chat, Message, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import json
+
+from app.chatbot.utils import process_user_input
+# from utils import process_user_input
 
 chatbot_bp = Blueprint('chatbot', __name__)
 
@@ -35,17 +39,20 @@ def ask_chatbot():
 
     # Fetch all chat history
     chat_history = Message.query.filter_by(chat_id=chat.id).order_by(Message.timestamp).all()
-    print(f"Chat History for {chat.chat_id}:")
-    for msg in chat_history:
-        print(f"{msg.sender}: {msg.content} ({msg.timestamp})")
+    print(f"Chat History for {chat.chat_id}:   {type(chat_history)}")
+    chat_history = [
+        {"role": "user" if msg.sender == "user" else "assistant", "content": msg.content}
+        for msg in chat_history
+    ]
+    # print(json.dumps(chat_history, indent=4))
+    response = process_user_input(message, chat_history)
+    print("agent's response : ",response)
 
-    # Hardcoded chatbot response
-    chatbot_response = "This is a hardcoded response to your input: " + message
-    bot_message = Message(chat_id=chat.id, sender='bot', content=chatbot_response)
+    bot_message = Message(chat_id=chat.id, sender='assistant', content=response)
     db.session.add(bot_message)
     db.session.commit()
 
-    return jsonify({"response": chatbot_response}), 200
+    return jsonify({"response": response}), 200
 
 @chatbot_bp.route('/latest-chats', methods=['GET'])
 @jwt_required()

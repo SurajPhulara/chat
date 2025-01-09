@@ -24,7 +24,7 @@ const Login = ({ toggleMode }) => {
 
       login(formData.email, formData.password); // Trigger login from context
     } catch (error) {
-      console.error("Error:", error.message);
+      console.log("Error:", error.message);
       alert(error.message);
     }
   };

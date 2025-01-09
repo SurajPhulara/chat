@@ -9,6 +9,7 @@ import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 const ChatWindow = ({ user, chatId, onChatIdChange }) => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
+  const [isBotTyping, setIsBotTyping] = useState(false); // New state to track if bot is typing
   const chatHistoryRef = useRef(null);  // Ref to the chat history container
   const router = useRouter();
 
@@ -24,9 +25,9 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
     }, 100); // Delay of 1 second
   };
 
-useEffect(()=>{
-  scrollToBottom()
-},[])
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatHistory]); // Scroll to bottom when chat history is updated
 
   useEffect(() => {
     if (chatId && user) {
@@ -56,6 +57,26 @@ useEffect(()=>{
         newChatId = uuidv4();
       }
 
+      // Add user message to chat history
+      setChatHistory([
+        ...chatHistory,
+        { sender: "user", content: message },
+      ]);
+      setMessage(""); // Clear the input field
+
+      // Temporarily add a "bot" message with a loader
+      setIsBotTyping(true);
+      setChatHistory((prevChatHistory) => [
+        ...prevChatHistory,
+        { sender: "bot", content: "..." }, // Placeholder for bot's typing
+      ]);
+
+      if (!chatId || chatHistory.length === 0) {
+        onChatIdChange(newChatId);
+        router.push(`/chat?id=${newChatId}`);
+      }
+
+      // Call the backend for bot's response
       const response = await apiRequest("chatbot/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,19 +86,18 @@ useEffect(()=>{
         }),
       });
 
-      if (!chatId || chatHistory.length === 0) {
-        onChatIdChange(newChatId);
-        router.push(`/chat?id=${newChatId}`);
-      }
+      // Update chat history with the bot's response and remove the loader
+      setChatHistory((prevChatHistory) => {
+        const updatedHistory = [...prevChatHistory];
+        updatedHistory[updatedHistory.length - 1] = {
+          sender: "bot",
+          content: response.response,
+        };
+        return updatedHistory;
+      });
+      setIsBotTyping(false); // Stop bot typing
 
-      setChatHistory([
-        ...chatHistory,
-        { sender: "user", content: message },
-        { sender: "bot", content: response.response },
-      ]);
-      setMessage("");
-
-      // Scroll to bottom after message is added
+      // Scroll to the bottom after response
       scrollToBottom();
     } catch (error) {
       console.log("Error sending message:", error);
@@ -89,8 +109,6 @@ useEffect(()=>{
       handleSendMessage();
     }
   };
-
-
 
   return (
     <div className="relative flex flex-col justify-end h-full max-h-full">
@@ -111,6 +129,19 @@ useEffect(()=>{
             </div>
           </div>
         ))}
+
+        {/* Show typing animation when bot is typing */}
+        {isBotTyping && (
+          <div className="flex justify-start mb-2">
+            <div className="w-5/6 max-w-full p-3 rounded-xl text-sm bg-gray-100 text-gray-900 rounded-br-sm">
+              <div className="animate-pulse">
+                <div className="h-2.5 bg-gray-300 rounded-full w-1/4 mb-2"></div>
+                <div className="h-2.5 bg-gray-300 rounded-full w-2/4 mb-2"></div>
+                <div className="h-2.5 bg-gray-300 rounded-full w-3/4 mb-2"></div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input Area */}
