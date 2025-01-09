@@ -8,53 +8,73 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Define the desired data structure with the 'all_parameters_collected' flag
+from typing import Optional
+from pydantic import BaseModel, Field
+
+# Define the parameters as a nested model
+class FreezoneParameters(BaseModel):
+    no_of_shareholders: Optional[int] = Field(
+        None, 
+        description="The number of shareholders. (Optional)"
+    )
+    no_of_visas: Optional[int] = Field(
+        None, 
+        description="The number of visas. (Optional)"
+    )
+    activities: Optional[str] = Field(
+        None, 
+        description="The activities required. (Optional)"
+    )
+    cost: Optional[float] = Field(
+        None, 
+        description="The cost associated with the freezone. (Optional)"
+    )
+    office_space: Optional[bool] = Field(
+        None, 
+        description="Indicates if office space is required. (Optional)"
+    )
+    preferred_location: Optional[str] = Field(
+        None, 
+        description="The preferred location for the freezone. (Optional)"
+    )
+
+# Define the main response model with the 'parameters' field
 class UserInputResponse(BaseModel):
-    parameters: Dict[str, Optional[str]] = Field(
-        default_factory=lambda: {
-            "No of shareholders": None,
-            "No of visas": None,
-            "Activities": None,
-            "Cost": None,
-            "Office space": None,
-        },
-        description=(
-            "Parameters collected from the user for freezone suggestions. "
-            "All fields are optional until the user provides them."
-        )
+    parameters: FreezoneParameters = Field(
+        default_factory=FreezoneParameters, 
+        description="Parameters related to the user's freezone requirements."
     )
-    response: str = Field(
-        ..., 
-        description="The chatbot's response to the user."
-    )
-    all_parameters_collected: bool = Field(
-        default=False, 
-        description="Flag indicating if all parameters have been collected from the user."
-    )
+    response: str = Field(..., description="The chatbot's response to the user.")
+    all_parameters_collected: bool = Field(default=False, description="Flag indicating if all parameters have been collected from the user.")
+
 
 
 # Function to give suggestions based on the collected parameters
 def give_suggestion(
-    parameters: Dict[str, str], user_query: str, chat_history: List[Dict[str, str]]
+    parameters: FreezoneParameters, user_query: str, chat_history: List[Dict[str, str]]
 ) -> str:
     """
-    Gives a suggestion based on the collected parameters. For now, returns a hardcoded response.
+    Gives a suggestion based on the collected parameters.
 
     Args:
-        parameters (dict): Collected parameters from the user.
+        parameters (FreezoneParameters): Collected parameters from the user.
         user_query (str): The user's original query.
         chat_history (list): The chat history.
 
     Returns:
-        str: A hardcoded suggestion for demonstration.
+        str: A suggestion based on the collected parameters.
     """
-    # Hardcoded response for demonstration
+    # Convert parameters to dictionary and access values
+    # parameters_dict = parameters.dict()
+
     return (
         f"Thank you for providing all the details. Based on your input:\n"
-        f"- Number of shareholders: {parameters.get('No of shareholders')}\n"
-        f"- Number of visas: {parameters.get('No of visas')}\n"
-        f"- Activities: {parameters.get('Activities')}\n"
-        f"- Cost: {parameters.get('Cost')}\n"
-        f"- Office space: {parameters.get('Office space')}\n\n"
+        f"- Number of shareholders: {parameters['no_of_shareholders']}\n"
+        f"- Number of visas: {parameters['no_of_visas']}\n"
+        f"- Activities: {parameters['activities']}\n"
+        f"- Cost: {parameters['cost']}\n"
+        f"- Office space: {'Yes' if parameters['office_space'] else 'No'}\n"
+        f"- Preferred location: {parameters['preferred_location']}\n\n"
         "I suggest the following freezones: Freezone A, Freezone B, Freezone C."
     )
 
@@ -86,10 +106,10 @@ def process_user_input(user_query: str, chat_history: List[Dict[str, str]]) -> D
             "1. If the query is general, respond directly and move on to the next step.\n"
             "2. If the query relates to freezones, check the user's provided information in the chat history. "
             "The parameters you need to collect are: 'No of shareholders', 'No of visas', 'Activities', 'Cost', "
-            "and 'Office space'. These parameters are optional initially.\n"
+            "'Office space', and 'Preferred location'. These parameters are optional initially.\n"
             "3. If any of the parameters are missing, ask the user for one missing parameter at a time in a conversational "
             "manner.\n"
-            "4. Only when **all** parameters ('No of shareholders', 'No of visas', 'Activities', 'Cost', and 'Office space') "
+            "4. Only when **all** parameters ('No of shareholders', 'No of visas', 'Activities', 'Cost', 'Office space', and 'Preferred location') "
             "are provided should you set the flag `all_parameters_collected` to `True`.\n"
             "5. If all parameters are collected, suggest appropriate freezones based on the user's input. The assistant should "
             "suggest the best freezones by referencing the parameters the user provided.\n"
@@ -101,9 +121,12 @@ def process_user_input(user_query: str, chat_history: List[Dict[str, str]]) -> D
             "\nChat history:\n{chat_history}\n\n"
             "User query:\n{query}\n\n"
             "Your task is to:\n"
-            "1. If all required parameters are collected, set `all_parameters_collected` to `True`, suggest freezones, and then reset."
+            "1. If all required parameters are collected, set `all_parameters_collected` to `True` and if the suggestion is already provided in the chat then set it to null and manage it accordingly"
             "2. If parameters are missing, prompt the user for the missing ones one at a time."
             "3. Return the structured response in JSON format with the appropriate information."
+            "note : always make sure all the fields are filled before setting the flag to true"
+            "see i want you to understand that what you give all_parameters_collected as true along with the parameters then i will use these parameters to call another tool to give suggestions bsed on these parameters so when you give it as true you do not need to give response got it also understand this workflow so that you can work better next time"
+            "also see in the chat history if the suggestion is already given in the current context then set the flag to falso and reply accordingly"
         ),
         input_variables=["query", "chat_history"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
@@ -114,14 +137,16 @@ def process_user_input(user_query: str, chat_history: List[Dict[str, str]]) -> D
 
     # Invoke the chain with the user query and chat history
     result = chain.invoke({"query": user_query, "chat_history": str(chat_history)})
-    # print(result)
+    print(f"\nAssistant result  : {result}")
     if result["all_parameters_collected"]:
+        print(f"\n  {type(result['parameters'])}  Assistant Suggestion: {result['parameters']}")
+
         # Call the suggestion giver function if the flag is True
         suggestion = give_suggestion(
             parameters=result["parameters"], 
             user_query=user_query, 
             chat_history=chat_history
         )
-        print(f"\nAssistant Suggestion: {suggestion}")
+        print(f"\nAssistant Suggestionnnnnn    : {suggestion}")
         return suggestion
     return result['response']
