@@ -125,7 +125,8 @@ def process_user_input(user_query: str, chat_history: List[Dict[str, str]]) -> D
             "2. If parameters are missing, prompt the user for the missing ones one at a time."
             "3. Return the structured response in JSON format with the appropriate information."
             "note : always make sure all the fields are filled before setting the flag to true"
-            "see i want you to understand that what you give all_parameters_collected as true along with the parameters then i will use these parameters to call another tool to give suggestions bsed on these parameters so when you give it as true you do not need to give response got it also understand this workflow so that you can work better next time"
+            "see i want you to understand that what you give all_parameters_collected as true along with the parameters then i will use these parameters to call another tool to give suggestions bsed on these parameters so when you give it as true you do not need to give response (but always remember do this only when the flag is false otherwise give back a response under no circumstances are you allowed to do but the is you can never set the flag to false and not returning the response i repeat never) got it also understand this workflow so that you can work better next time"
+            "you can never ever do this 'response': None, 'all_parameters_collected': False, got it,    if all the parameters are received and the user is asking for suggestion then set the flag to true otherwise under reply properly and accordingly"
             "also see in the chat history if the suggestion is already given in the current context then set the flag to falso and reply accordingly"
         ),
         input_variables=["query", "chat_history"],
@@ -149,4 +150,4 @@ def process_user_input(user_query: str, chat_history: List[Dict[str, str]]) -> D
         )
         print(f"\nAssistant Suggestionnnnnn    : {suggestion}")
         return suggestion
-    return result['response']
+    return result['response'] or "some error occured unable to fetch"

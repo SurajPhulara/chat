@@ -101,6 +101,16 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       scrollToBottom();
     } catch (error) {
       console.log("Error sending message:", error);
+
+      setChatHistory((prevChatHistory) => {
+        const updatedHistory = [...prevChatHistory];
+        updatedHistory[updatedHistory.length - 1] = {
+          sender: "bot",
+          content: "some error occured",
+        };
+        return updatedHistory;
+      });
+      setIsBotTyping(false); // Stop bot typing
     }
   };
 
