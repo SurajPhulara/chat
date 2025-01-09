@@ -9,8 +9,9 @@ import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 const ChatWindow = ({ user, chatId, onChatIdChange }) => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
-  const [isBotTyping, setIsBotTyping] = useState(false); // New state to track if bot is typing
-  const chatHistoryRef = useRef(null);  // Ref to the chat history container
+  const [isBotTyping, setIsBotTyping] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState(chatId); // Track the current chatId
+  const chatHistoryRef = useRef(null);
   const router = useRouter();
 
   // Function to scroll the chat history to the bottom
@@ -19,15 +20,24 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       if (chatHistoryRef.current) {
         chatHistoryRef.current.scrollTo({
           top: chatHistoryRef.current.scrollHeight,
-          behavior: "smooth", // This enables smooth scrolling
+          behavior: "smooth",
         });
       }
-    }, 100); // Delay of 1 second
+    }, 100);
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [chatHistory]); // Scroll to bottom when chat history is updated
+  }, [chatHistory]);
+
+  useEffect(() => {
+    if (chatId !== currentChatId) {
+      // Reset bot typing state if chatId changes
+      setIsBotTyping(false);
+      setChatHistory([]);
+      setCurrentChatId(chatId); // Update current chatId
+    }
+  }, [chatId]);
 
   useEffect(() => {
     if (chatId && user) {
@@ -68,7 +78,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       setIsBotTyping(true);
       setChatHistory((prevChatHistory) => [
         ...prevChatHistory,
-        { sender: "bot", content: "..." }, // Placeholder for bot's typing
+        { sender: "bot", content: "..." },
       ]);
 
       if (!chatId || chatHistory.length === 0) {
@@ -106,7 +116,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
         const updatedHistory = [...prevChatHistory];
         updatedHistory[updatedHistory.length - 1] = {
           sender: "bot",
-          content: "some error occured",
+          content: "An error occurred. Please try again.",
         };
         return updatedHistory;
       });
