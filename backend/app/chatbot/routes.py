@@ -51,6 +51,11 @@ def ask_chatbot():
     except Exception as e:
         print(f"Error generating response: {e}")
         response = "I'm sorry, it seems some error occurred while generating the response."
+        bot_message = Message(chat_id=chat.id, sender='assistant', content=response)
+        db.session.add(bot_message)
+        db.session.commit()
+
+        return jsonify({"response": response}), 200
 
     # print("agent's response : ",response)
 

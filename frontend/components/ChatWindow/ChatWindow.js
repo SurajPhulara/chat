@@ -81,11 +81,6 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
         { sender: "bot", content: "..." },
       ]);
 
-      if (!chatId || chatHistory.length === 0) {
-        onChatIdChange(newChatId);
-        router.push(`/chat?id=${newChatId}`);
-      }
-
       // Call the backend for bot's response
       const response = await apiRequest("chatbot/ask", {
         method: "POST",
@@ -109,6 +104,12 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
 
       // Scroll to the bottom after response
       scrollToBottom();
+
+      if (!chatId || chatHistory.length === 0) {
+        onChatIdChange(newChatId);
+        router.push(`/chat?id=${newChatId}`);
+      }
+      
     } catch (error) {
       console.log("Error sending message:", error);
 

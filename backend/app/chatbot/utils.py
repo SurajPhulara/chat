@@ -128,6 +128,8 @@ def process_user_input(user_query: str, chat_history: List[Dict[str, str]]) -> D
             "see i want you to understand that what you give all_parameters_collected as true along with the parameters then i will use these parameters to call another tool to give suggestions bsed on these parameters so when you give it as true you do not need to give response (but always remember do this only when the flag is false otherwise give back a response under no circumstances are you allowed to do but the is you can never set the flag to false and not returning the response i repeat never) got it also understand this workflow so that you can work better next time"
             "you can never ever do this 'response': None, 'all_parameters_collected': False, got it,    if all the parameters are received and the user is asking for suggestion then set the flag to true otherwise under reply properly and accordingly"
             "also see in the chat history if the suggestion is already given in the current context then set the flag to falso and reply accordingly"
+            "keep in mind the datatype for the user's input in the user gives meaningless input then explain to them what you are asking and what type of inpyt you require"
+            ""
         ),
         input_variables=["query", "chat_history"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
