@@ -22,10 +22,10 @@ const Signup = ({ toggleMode }) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Something went wrong");
 
-      alert("Registration successful! Please log in.");
+      // alert("Registration successful! Please log in.");
       toggleMode();
     } catch (error) {
-      console.error("Error:", error.message);
+      console.log("Error:", error.message);
       alert(error.message);
     }
   };
