@@ -9,7 +9,7 @@ export default function LandingPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
 
   const toggleMode = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     setIsLoginMode((prevMode) => !prevMode);
   };
 

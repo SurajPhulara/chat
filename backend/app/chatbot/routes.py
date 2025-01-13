@@ -39,14 +39,20 @@ def ask_chatbot():
 
     # Fetch all chat history
     chat_history = Message.query.filter_by(chat_id=chat.id).order_by(Message.timestamp).all()
-    print(f"Chat History for {chat.chat_id}:   {type(chat_history)}")
+    # print(f"Chat History for {chat.chat_id}:   {type(chat_history)}")
     chat_history = [
         {"role": "user" if msg.sender == "user" else "assistant", "content": msg.content}
         for msg in chat_history
     ]
     # print(json.dumps(chat_history, indent=4))
-    response = process_user_input(message, chat_history)
-    print("agent's response : ",response)
+    # response = process_user_input(message, chat_history)
+    try:
+        response = process_user_input(message, chat_history)
+    except Exception as e:
+        print(f"Error generating response: {e}")
+        response = "I'm sorry, it seems some error occurred while generating the response."
+
+    # print("agent's response : ",response)
 
     bot_message = Message(chat_id=chat.id, sender='assistant', content=response)
     db.session.add(bot_message)
