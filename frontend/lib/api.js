@@ -8,7 +8,7 @@ export const apiRequest = async (endpoint, options = {}) => {
       credentials: "include", // Ensure cookies are sent with the request
     };
 
-    console.log("API Request initiated:", endpoint, updatedOptions);
+    // console.log("API Request initiated:", endpoint, updatedOptions);
 
     // Make the API call
     const response = await fetch(`${BASE_URL}/${endpoint}`, updatedOptions);
