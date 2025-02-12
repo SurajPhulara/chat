@@ -13,6 +13,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
   const [currentChatId, setCurrentChatId] = useState(chatId);
   const chatHistoryRef = useRef(null);
   const router = useRouter();
+  const googleFormUrl = process.env.NEXT_PUBLIC_GOOGLE_FORM_URL;
 
   const suggestedQuestions = [
     "What's the cheapest freezone?",
@@ -42,6 +43,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       setCurrentChatId(chatId);
     }
   }, [chatId]);
+  
 
   useEffect(() => {
     if (chatId && user) {
@@ -131,17 +133,27 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
             className={`flex ${chat.sender === "user" ? "justify-end" : "justify-start"} mb-2`}
           >
             <div
-              className={`w-5/6 max-w-full p-3 rounded-xl text-sm ${
-                chat.sender === "user"
+              className={`w-5/6 max-w-full p-3 rounded-xl text-sm ${chat.sender === "user"
                   ? "bg-gray-100 text-gray-900 rounded-br-sm"
                   : ""
-              }`}
+                }`}
             >
               {chat.content}
+              {/* Add feedback button after last bot response */}
+              {index === chatHistory.length - 1 && chat.sender != "user" && (
+                <div className=" mt-4">
+                <button
+                  onClick={() => window.open(googleFormUrl, "_blank")}
+                  className="px-4 py-2 text-white bg-black rounded-full shadow-lg hover:bg-green-600 focus:outline-none"
+                >
+                  Give Feedback
+                </button>
+              </div>
+              )}
             </div>
           </div>
         ))}
-  
+
         {chatHistory.length === 0 && !isBotTyping && (
           <div className="flex flex-col items-center justify-center h-full">
             {/* Heading */}
@@ -151,7 +163,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
                 I can help you with questions like...
               </p>
             </div>
-  
+
             {/* Suggested Questions Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl p-4">
               {suggestedQuestions.map((q, index) => (
@@ -164,7 +176,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
                 </button>
               ))}
             </div>
-  
+
             {/* Input Box (Only when no chat history) */}
             <div className="w-full max-w-4xl mt-4">
               <div className="w-full flex items-center justify-between p-2 bg-white rounded-full shadow-md">
@@ -186,7 +198,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
             </div>
           </div>
         )}
-  
+
         {isBotTyping && (
           <div className="flex justify-start mb-2">
             <div className="w-5/6 max-w-full p-3 rounded-xl text-sm bg-gray-100 text-gray-900 rounded-br-sm">
@@ -199,7 +211,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
           </div>
         )}
       </div>
-  
+
       {/* Input Box at Bottom (Only when chat history exists) */}
       {!(chatHistory.length === 0 && !isBotTyping) && (
         <div className="sticky bottom-0 w-10/12 max-w-full flex m-auto items-center justify-between mt-auto p-2 bg-white rounded-full shadow-md">
@@ -221,7 +233,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       )}
     </div>
   );
-  
+
 };
 
 export default ChatWindow;
