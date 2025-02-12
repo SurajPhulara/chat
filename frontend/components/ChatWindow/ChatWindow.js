@@ -10,11 +10,16 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
-  const [currentChatId, setCurrentChatId] = useState(chatId); // Track the current chatId
+  const [currentChatId, setCurrentChatId] = useState(chatId);
   const chatHistoryRef = useRef(null);
   const router = useRouter();
 
-  // Function to scroll the chat history to the bottom
+  const suggestedQuestions = [
+    "What's the cheapest freezone?",
+    "How much does a company cost?",
+    "How much does a visa cost?",
+  ];
+
   const scrollToBottom = () => {
     setTimeout(() => {
       if (chatHistoryRef.current) {
@@ -32,10 +37,9 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
 
   useEffect(() => {
     if (chatId !== currentChatId) {
-      // Reset bot typing state if chatId changes
       setIsBotTyping(false);
       setChatHistory([]);
-      setCurrentChatId(chatId); // Update current chatId
+      setCurrentChatId(chatId);
     }
   }, [chatId]);
 
@@ -58,8 +62,9 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
     }
   }, [chatId, user]);
 
-  const handleSendMessage = async () => {
-    if (message.trim() === "") return;
+  const handleSendMessage = async (inputMessage) => {
+    const msg = inputMessage !== undefined ? inputMessage : message;
+    if (msg.trim() === "") return;
 
     try {
       let newChatId = chatId;
@@ -67,61 +72,47 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
         newChatId = uuidv4();
       }
 
-      // Add user message to chat history
-      setChatHistory([
-        ...chatHistory,
-        { sender: "user", content: message },
-      ]);
-      setMessage(""); // Clear the input field
+      setChatHistory(prev => [...prev, { sender: "user", content: msg }]);
+      setMessage("");
 
-      // Temporarily add a "bot" message with a loader
       setIsBotTyping(true);
-      setChatHistory((prevChatHistory) => [
-        ...prevChatHistory,
-        { sender: "bot", content: "..." },
-      ]);
+      setChatHistory(prev => [...prev, { sender: "bot", content: "..." }]);
 
-      // Call the backend for bot's response
       const response = await apiRequest("chatbot/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: newChatId,
-          message,
+          message: msg,
         }),
       });
 
-      // Update chat history with the bot's response and remove the loader
-      setChatHistory((prevChatHistory) => {
-        const updatedHistory = [...prevChatHistory];
+      setChatHistory(prev => {
+        const updatedHistory = [...prev];
         updatedHistory[updatedHistory.length - 1] = {
           sender: "bot",
           content: response.response,
         };
         return updatedHistory;
       });
-      setIsBotTyping(false); // Stop bot typing
-
-      // Scroll to the bottom after response
+      setIsBotTyping(false);
       scrollToBottom();
 
       if (!chatId || chatHistory.length === 0) {
         onChatIdChange(newChatId);
         router.push(`/chat?id=${newChatId}`);
       }
-      
     } catch (error) {
       console.log("Error sending message:", error);
-
-      setChatHistory((prevChatHistory) => {
-        const updatedHistory = [...prevChatHistory];
+      setChatHistory(prev => {
+        const updatedHistory = [...prev];
         updatedHistory[updatedHistory.length - 1] = {
           sender: "bot",
           content: "An error occurred. Please try again.",
         };
         return updatedHistory;
       });
-      setIsBotTyping(false); // Stop bot typing
+      setIsBotTyping(false);
     }
   };
 
@@ -133,7 +124,6 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
 
   return (
     <div className="relative flex flex-col justify-end h-full max-h-full">
-      {/* Chat History */}
       <div className="flex-1 overflow-y-auto p-4" ref={chatHistoryRef}>
         {chatHistory.map((chat, index) => (
           <div
@@ -141,17 +131,62 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
             className={`flex ${chat.sender === "user" ? "justify-end" : "justify-start"} mb-2`}
           >
             <div
-              className={`w-5/6 max-w-full p-3 rounded-xl text-sm ${chat.sender === "user"
-                ? "bg-gray-100 text-gray-900 rounded-br-sm"
-                : ""
-                }`}
+              className={`w-5/6 max-w-full p-3 rounded-xl text-sm ${
+                chat.sender === "user"
+                  ? "bg-gray-100 text-gray-900 rounded-br-sm"
+                  : ""
+              }`}
             >
               {chat.content}
             </div>
           </div>
         ))}
-
-        {/* Show typing animation when bot is typing */}
+  
+        {chatHistory.length === 0 && !isBotTyping && (
+          <div className="flex flex-col items-center justify-center h-full">
+            {/* Heading */}
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800">Hi, what can I help you with?</h2>
+              <p className="text-sm text-gray-500 mt-2">
+                I can help you with questions like...
+              </p>
+            </div>
+  
+            {/* Suggested Questions Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl p-4">
+              {suggestedQuestions.map((q, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSendMessage(q)}
+                  className="p-4 text-left bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm border border-gray-200 hover:border-gray-300"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+  
+            {/* Input Box (Only when no chat history) */}
+            <div className="w-full max-w-4xl mt-4">
+              <div className="w-full flex items-center justify-between p-2 bg-white rounded-full shadow-md">
+                <input
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="min-w-40 flex-1 flex-shrink-0 px-2 py-2 text-gray-700 bg-transparent focus:outline-none rounded-full"
+                  placeholder="Type a message..."
+                />
+                <button
+                  onClick={() => handleSendMessage()}
+                  className="p-3 ml-2 text-white bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none"
+                >
+                  <PaperAirplaneIcon className="w-5 h-5 transform -rotate-45" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+  
         {isBotTyping && (
           <div className="flex justify-start mb-2">
             <div className="w-5/6 max-w-full p-3 rounded-xl text-sm bg-gray-100 text-gray-900 rounded-br-sm">
@@ -164,26 +199,29 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
           </div>
         )}
       </div>
-
-      {/* Input Area */}
-      <div className="sticky bottom-0 w-10/12 max-w-full flex m-auto items-center justify-between mt-auto p-2 bg-white rounded-full shadow-md">
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          className="min-w-40 flex-1 flex-shrink-0 px-2 py-2 text-gray-700 bg-transparent focus:outline-none rounded-full"
-          placeholder="Type a message..."
-        />
-        <button
-          onClick={handleSendMessage}
-          className="p-3 ml-2 text-white bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none"
-        >
-          <PaperAirplaneIcon className="w-5 h-5 transform -rotate-45" />
-        </button>
-      </div>
+  
+      {/* Input Box at Bottom (Only when chat history exists) */}
+      {!(chatHistory.length === 0 && !isBotTyping) && (
+        <div className="sticky bottom-0 w-10/12 max-w-full flex m-auto items-center justify-between mt-auto p-2 bg-white rounded-full shadow-md">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="min-w-40 flex-1 flex-shrink-0 px-2 py-2 text-gray-700 bg-transparent focus:outline-none rounded-full"
+            placeholder="Type a message..."
+          />
+          <button
+            onClick={() => handleSendMessage()}
+            className="p-3 ml-2 text-white bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none"
+          >
+            <PaperAirplaneIcon className="w-5 h-5 transform -rotate-45" />
+          </button>
+        </div>
+      )}
     </div>
   );
+  
 };
 
 export default ChatWindow;
