@@ -11,6 +11,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
   const [chatHistory, setChatHistory] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [currentChatId, setCurrentChatId] = useState(chatId);
+  const [hasFirstMessage, setHasFirstMessage] = useState(false); // New state
   const chatHistoryRef = useRef(null);
   const router = useRouter();
   const googleFormUrl = process.env.NEXT_PUBLIC_GOOGLE_FORM_URL;
@@ -41,9 +42,9 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       setIsBotTyping(false);
       setChatHistory([]);
       setCurrentChatId(chatId);
+      setHasFirstMessage(false); // Reset for new chats
     }
   }, [chatId]);
-
 
   useEffect(() => {
     if (chatId && user) {
@@ -52,7 +53,9 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
           const response = await apiRequest(`chatbot/chat-history?chat_id=${chatId}`, {
             method: "GET",
           });
-          setChatHistory(response.chat_history || []);
+          const history = response.chat_history || [];
+          setChatHistory(history);
+          setHasFirstMessage(history.length > 0); // Update hasFirstMessage based on fetched history
         } catch (error) {
           console.log("Error fetching chat history:", error);
         }
@@ -61,6 +64,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       fetchChatHistory();
     } else {
       setChatHistory([]);
+      setHasFirstMessage(false); // Reset for new chats
     }
   }, [chatId, user]);
 
@@ -74,11 +78,12 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
         newChatId = uuidv4();
       }
 
-      setChatHistory(prev => [...prev, { sender: "user", content: msg }]);
+      setChatHistory((prev) => [...prev, { sender: "user", content: msg }]);
+      setHasFirstMessage(true); // Mark first message as sent
       setMessage("");
 
       setIsBotTyping(true);
-      setChatHistory(prev => [...prev, { sender: "bot", content: "..." }]);
+      setChatHistory((prev) => [...prev, { sender: "bot", content: "..." }]);
 
       const response = await apiRequest("chatbot/ask", {
         method: "POST",
@@ -89,7 +94,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
         }),
       });
 
-      setChatHistory(prev => {
+      setChatHistory((prev) => {
         const updatedHistory = [...prev];
         updatedHistory[updatedHistory.length - 1] = {
           sender: "bot",
@@ -106,7 +111,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       }
     } catch (error) {
       console.log("Error sending message:", error);
-      setChatHistory(prev => {
+      setChatHistory((prev) => {
         const updatedHistory = [...prev];
         updatedHistory[updatedHistory.length - 1] = {
           sender: "bot",
@@ -161,9 +166,8 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
           </div>
         ))}
 
-
-
-        {chatHistory.length === 0 && !isBotTyping && (
+        {/* Welcome Message and Suggested Questions */}
+        {!hasFirstMessage && chatHistory.length === 0 && !isBotTyping && (
           <div className="flex flex-col items-center justify-center h-full">
             {/* Heading */}
             <div className="text-center mb-4">
@@ -208,6 +212,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
           </div>
         )}
 
+        {/* Bot Typing Indicator */}
         {isBotTyping && (
           <div className="flex justify-start mb-2">
             <div className="w-5/6 max-w-full p-3 rounded-xl text-sm bg-gray-100 text-gray-900 rounded-br-sm">
@@ -222,7 +227,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       </div>
 
       {/* Input Box at Bottom (Only when chat history exists) */}
-      {!(chatHistory.length === 0 && !isBotTyping) && (
+      {hasFirstMessage && (
         <div className="sticky bottom-0 w-10/12 max-w-full flex m-auto items-center justify-between mt-auto p-2 bg-white rounded-full shadow-md">
           <input
             type="text"
@@ -242,7 +247,6 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       )}
     </div>
   );
-
 };
 
 export default ChatWindow;
