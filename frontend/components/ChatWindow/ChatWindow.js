@@ -43,7 +43,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
       setCurrentChatId(chatId);
     }
   }, [chatId]);
-  
+
 
   useEffect(() => {
     if (chatId && user) {
@@ -128,20 +128,28 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
     <div className="relative flex flex-col justify-end h-full max-h-full">
       <div className="flex-1 overflow-y-auto p-4" ref={chatHistoryRef}>
         {chatHistory.map((chat, index) => (
-          <div
-            key={index}
-            className={`flex ${chat.sender === "user" ? "justify-end" : "justify-start"} mb-2`}
-          >
-            <div
-              className={`w-5/6 max-w-full p-3 rounded-xl text-sm ${chat.sender === "user"
-                  ? "bg-gray-100 text-gray-900 rounded-br-sm"
-                  : ""
-                }`}
-            >
-              {chat.content}
-              {/* Add feedback button after last bot response */}
-              {index === chatHistory.length - 1 && chat.sender != "user" && (
-                <div className=" mt-4">
+          <div key={index} className="flex flex-col mb-2">
+            {/* User Message */}
+            {chat.sender === "user" && (
+              <div className="flex justify-end">
+                <div className="w-5/6 max-w-full p-3 rounded-xl text-sm bg-gray-100 text-gray-900">
+                  {chat.content}
+                </div>
+              </div>
+            )}
+
+            {/* Bot Message */}
+            {chat.sender !== "user" && (
+              <div className="flex justify-start">
+                <div className="w-5/6 max-w-full p-3 rounded-xl text-sm text-gray-900">
+                  {chat.content}
+                </div>
+              </div>
+            )}
+
+            {/* Feedback Button (Only after the last bot response) */}
+            {chat.sender !== "user" && !isBotTyping && index === chatHistory.length - 1 && (
+              <div className="flex justify-start mt-2">
                 <button
                   onClick={() => window.open(googleFormUrl, "_blank")}
                   className="px-4 py-2 text-white bg-black rounded-full shadow-lg hover:bg-green-600 focus:outline-none"
@@ -149,10 +157,11 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
                   Give Feedback
                 </button>
               </div>
-              )}
-            </div>
+            )}
           </div>
         ))}
+
+
 
         {chatHistory.length === 0 && !isBotTyping && (
           <div className="flex flex-col items-center justify-center h-full">
