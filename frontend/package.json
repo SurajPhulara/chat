@@ -12,6 +12,8 @@
     "@heroicons/react": "^2.2.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
+    "dangerously-set-inner-html": "^2.0.1",
+    "dompurify": "^3.2.4",
     "next": "15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
