@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "../../lib/api";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
+import DOMPurify from "dompurify"
 
 const ChatWindow = ({ user, chatId, onChatIdChange }) => {
   const [message, setMessage] = useState("");
@@ -21,6 +22,20 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
     "How much does a company cost?",
     "How much does a visa cost?",
   ];
+
+  const formatChatResponse = (rawResponse) => {
+    const formatted = rawResponse
+    .replace(/\n/g, "<br>")
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/### (.*?)\n/g, "<h3>$1</h3>")
+    .replace(/## (.*?)\n/g, "<h2>$1</h2>")
+    .replace(/# (.*?)\n/g, "<h1>$1</h1>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/###/g, "")
+    .replace(/#/g, "");
+
+  return DOMPurify.sanitize(formatted)
+  };
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -115,7 +130,7 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
         const updatedHistory = [...prev];
         updatedHistory[updatedHistory.length - 1] = {
           sender: "bot",
-          content: "An error occurred. Please try again.",
+          content: `An error occurred. Please try again.`,
         };
         return updatedHistory;
       });
@@ -146,9 +161,10 @@ const ChatWindow = ({ user, chatId, onChatIdChange }) => {
             {/* Bot Message */}
             {chat.sender !== "user" && (
               <div className="flex justify-start">
-                <div className="w-5/6 max-w-full p-3 rounded-xl text-sm text-gray-900">
-                  {chat.content}
-                </div>
+                <div
+                  className="w-5/6 max-w-full p-3 rounded-xl text-sm text-gray-900"
+                  dangerouslySetInnerHTML={{ __html: formatChatResponse(chat.content) }}
+                />
               </div>
             )}
 
